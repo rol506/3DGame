@@ -1,7 +1,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/vec2.hpp>
+
 #include <iostream>
+
+glm::ivec2 gWindowSize(960, 540);
 
 int main()
 {
@@ -16,7 +20,7 @@ int main()
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(640, 480, "3DGame by rol506", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(gWindowSize.x, gWindowSize.y, "3DGame by rol506", NULL, NULL);
   if (!window)
   {
     std::cout << "failed to create window!\n";
@@ -37,6 +41,7 @@ int main()
   std::cout << "OpenGL renderer: " << glGetString(GL_RENDERER) << "\n";
 
   {
+    glClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
     while (!glfwWindowShouldClose(window))
     {
       glClear(GL_COLOR_BUFFER_BIT);
