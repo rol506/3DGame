@@ -5,7 +5,43 @@
 
 #include <iostream>
 
+#include "Renderer/ShaderProgram.h"
+
 glm::ivec2 gWindowSize(960, 540);
+
+GLfloat vertices[] = {
+  //X      Y     Z     R     G     B
+  -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, // 0
+  -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, // 1
+   0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, // 2
+   0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f  // 3
+};
+
+GLuint elements[] = {
+  //  0---3
+  //  | \ |
+  //  1---2
+  0, 1, 2,
+  0, 2, 3
+};
+
+const char* vertex =
+"#version 430 core\n"
+"layout (location = 0) in vec3 vertexPos;"
+"layout (location = 1) in vec3 vertexColor;"
+"out vec3 Color;"
+"void main(){"
+"gl_Position = vec4(vertexPos, 1.0);"
+"Color = vertexColor;"
+"}";
+
+const char* fragment =
+"#version 430 core\n"
+"in vec3 Color;"
+"out vec4 FragColor;"
+"void main(){"
+"FragColor = vec4(Color, 1.0);"
+"}";
 
 int main()
 {
@@ -41,6 +77,25 @@ int main()
   std::cout << "OpenGL renderer: " << glGetString(GL_RENDERER) << "\n";
 
   {
+    GLuint VBO, VAO, EBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+
+    RenderEngine::ShaderProgram shader(vertex, fragment);
+
     glClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
     while (!glfwWindowShouldClose(window))
     {
@@ -50,6 +105,12 @@ int main()
       {
         glfwSetWindowShouldClose(window, true);
       }
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+      glBindVertexArray(VAO);
+      shader.use();
+      
+      glDrawElements(GL_TRIANGLES, sizeof(elements), GL_UNSIGNED_INT, nullptr);
 
       glfwSwapBuffers(window);
 
