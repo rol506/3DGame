@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "Resources/ResourceManager.h"
 #include "Renderer/ShaderProgram.h"
 
 glm::ivec2 gWindowSize(960, 540);
@@ -25,26 +26,11 @@ GLuint elements[] = {
   0, 2, 3
 };
 
-const char* vertex =
-"#version 430 core\n"
-"layout (location = 0) in vec3 vertexPos;"
-"layout (location = 1) in vec3 vertexColor;"
-"out vec3 Color;"
-"void main(){"
-"gl_Position = vec4(vertexPos, 1.0);"
-"Color = vertexColor;"
-"}";
-
-const char* fragment =
-"#version 430 core\n"
-"in vec3 Color;"
-"out vec4 FragColor;"
-"void main(){"
-"FragColor = vec4(Color, 1.0);"
-"}";
-
-int main()
+int main(int argc, char** argv)
 {
+  ResourceManager::setExecutablePath(argv[0]);
+  std::cout << "Set executable path: " << argv[0] << "\n";
+
   if (!glfwInit())
   {
     std::cout << "glfwInit failed!\n";
@@ -94,7 +80,7 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-    RenderEngine::ShaderProgram shader(vertex, fragment);
+    auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vertex.vert", "res/shaders/fragment.frag");
 
     glClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
     while (!glfwWindowShouldClose(window))
@@ -108,7 +94,7 @@ int main()
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
       glBindVertexArray(VAO);
-      shader.use();
+      shader->use();
       
       glDrawElements(GL_TRIANGLES, sizeof(elements), GL_UNSIGNED_INT, nullptr);
 
