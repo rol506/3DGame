@@ -20,6 +20,9 @@ namespace RenderEngine
     void use() const;
     bool isCompiled() const {return m_isCompiled;}
 
+    void setInt(const int value, const std::string& name);
+    void setFloat(const float value, const std::string& name);
+
   private:
 
     bool createShader(GLuint& shaderID, const std::string& shaderSource, const GLenum& shaderType);

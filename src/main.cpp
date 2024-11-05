@@ -4,18 +4,20 @@
 #include <glm/vec2.hpp>
 
 #include <iostream>
+#include <cmath>
 
 #include "Resources/ResourceManager.h"
 #include "Renderer/ShaderProgram.h"
+#include "Renderer/Texture2D.h"
 
 glm::ivec2 gWindowSize(960, 540);
 
 GLfloat vertices[] = {
-  //X      Y     Z     R     G     B
-  -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, // 0
-  -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, // 1
-   0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, // 2
-   0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f  // 3
+  //X      Y     Z     R     G     B     U     V
+  -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 0
+  -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 1
+   0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 2
+   0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f  // 3
 };
 
 GLuint elements[] = {
@@ -71,16 +73,25 @@ int main(int argc, char** argv)
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
 
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
     auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vertex.vert", "res/shaders/fragment.frag");
+    auto texture = ResourceManager::loadTexture("BrickWall", "res/textures/wall.jpg");
+
+    shader->use();
+    shader->setInt(gWindowSize.x, "windowSizeX");
+    shader->setInt(gWindowSize.y, "windowSizeY");
+
+    shader->setInt(0, "tex");
 
     glClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
     while (!glfwWindowShouldClose(window))
@@ -92,6 +103,20 @@ int main(int argc, char** argv)
         glfwSetWindowShouldClose(window, true);
       }
 
+      float pos = glfwGetTime() / 5.f * gWindowSize.y / 500;
+      if (pos >= 1.3f)
+      {
+        glfwSetTime(0);
+      }
+
+      //float pos = sin(glfwGetTime());
+
+      //std::cout << "Pos: " << pos << "\n";
+
+      shader->setFloat(pos, "pos");
+
+      glActiveTexture(GL_TEXTURE0);
+      texture->bind();
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
       glBindVertexArray(VAO);
       shader->use();
