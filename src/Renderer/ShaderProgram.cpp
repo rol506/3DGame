@@ -66,7 +66,7 @@ namespace RenderEngine
     glUseProgram(m_ID);
   }
 
-    ShaderProgram& ShaderProgram::operator=(ShaderProgram&& shader)
+    ShaderProgram& ShaderProgram::operator=(ShaderProgram&& shader) noexcept
     {
       if (this != &shader)
       {
@@ -81,7 +81,7 @@ namespace RenderEngine
       return *this;
     }
 
-    ShaderProgram::ShaderProgram(ShaderProgram&& shader)
+    ShaderProgram::ShaderProgram(ShaderProgram&& shader) noexcept
     {
       m_ID = shader.m_ID;
       m_isCompiled = shader.m_isCompiled;

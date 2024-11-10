@@ -36,7 +36,7 @@ namespace RenderEngine
     glDeleteTextures(1, &m_ID);
   }
 
-  Texture2D& Texture2D::operator=(Texture2D&& texture)
+  Texture2D& Texture2D::operator=(Texture2D&& texture) noexcept
   {
     if (this != &texture)
     {
@@ -53,7 +53,7 @@ namespace RenderEngine
     return *this;
   }
 
-  Texture2D::Texture2D(Texture2D&& texture)
+  Texture2D::Texture2D(Texture2D&& texture) noexcept
   {
     m_ID = texture.m_ID;
     m_mode = texture.m_mode;

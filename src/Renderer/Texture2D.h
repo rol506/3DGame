@@ -15,8 +15,8 @@ namespace RenderEngine
 
     Texture2D(const Texture2D&) = delete;
     Texture2D& operator=(const Texture2D&) = delete;
-    Texture2D& operator=(Texture2D&& texture);
-    Texture2D(Texture2D&& texture);
+    Texture2D& operator=(Texture2D&& texture) noexcept;
+    Texture2D(Texture2D&& texture) noexcept;
 
     unsigned int getWidth() const {return m_width;}
     unsigned int getHeight() const {return m_height;}

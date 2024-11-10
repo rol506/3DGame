@@ -14,8 +14,8 @@ namespace RenderEngine
 
     ShaderProgram(const ShaderProgram&) = delete;
     ShaderProgram& operator=(const ShaderProgram&) = delete;
-    ShaderProgram& operator=(ShaderProgram&& shader);
-    ShaderProgram(ShaderProgram&& shader);
+    ShaderProgram& operator=(ShaderProgram&& shader) noexcept;
+    ShaderProgram(ShaderProgram&& shader) noexcept;
 
     void use() const;
     bool isCompiled() const {return m_isCompiled;}
