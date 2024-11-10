@@ -9,6 +9,7 @@
 #include "Resources/ResourceManager.h"
 #include "Renderer/ShaderProgram.h"
 #include "Renderer/Texture2D.h"
+#include "Renderer/VertexArray.h"
 
 glm::ivec2 gWindowSize(960, 540);
 
