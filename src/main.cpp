@@ -6,9 +6,12 @@
 #include <iostream>
 #include <cmath>
 
+#include "Renderer/VertexBuffer.h"
+#include "Renderer/VertexBufferLayout.h"
 #include "Resources/ResourceManager.h"
 #include "Renderer/ShaderProgram.h"
 #include "Renderer/Texture2D.h"
+#include "Renderer/IndexBuffer.h"
 #include "Renderer/VertexArray.h"
 
 glm::ivec2 gWindowSize(960, 540);
@@ -66,24 +69,20 @@ int main(int argc, char** argv)
   std::cout << "OpenGL renderer: " << glGetString(GL_RENDERER) << "\n";
 
   {
-    GLuint VBO, VAO, EBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
+    RenderEngine::VertexBufferLayout layout;
+    layout.addElementLayoutFloat(3, false);
+    layout.addElementLayoutFloat(3, false);
+    layout.addElementLayoutFloat(2, false);
 
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+    RenderEngine::VertexBuffer buffer;
+    buffer.init(vertices, sizeof(vertices));
+
+    RenderEngine::IndexBuffer indexBuffer;
+    indexBuffer.init(elements, sizeof(elements));
+
+    RenderEngine::VertexArray vertexArray;
+    vertexArray.addBuffer(buffer, layout);
 
     auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vertex.vert", "res/shaders/fragment.frag");
     auto texture = ResourceManager::loadTexture("BrickWall", "res/textures/wall.jpg");
@@ -118,11 +117,11 @@ int main(int argc, char** argv)
 
       glActiveTexture(GL_TEXTURE0);
       texture->bind();
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-      glBindVertexArray(VAO);
+      indexBuffer.bind(); 
+      vertexArray.bind();
       shader->use();
       
-      glDrawElements(GL_TRIANGLES, sizeof(elements), GL_UNSIGNED_INT, nullptr);
+      glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, nullptr);
 
       glfwSwapBuffers(window);
 
