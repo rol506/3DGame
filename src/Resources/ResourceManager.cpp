@@ -94,7 +94,7 @@ std::shared_ptr<RenderEngine::Texture2D> ResourceManager::loadTexture(const std:
   }
 
   std::shared_ptr<RenderEngine::Texture2D> newTexture = m_textures.emplace(textureName, std::make_shared<RenderEngine::Texture2D>(width, height, channels,
-                                                                                                                                  data, wrapMode, filter)).first->second;
+                                                                                                                                  data, filter, wrapMode)).first->second;
 
   stbi_image_free(data);
   return newTexture;
