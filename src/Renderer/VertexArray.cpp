@@ -2,7 +2,7 @@
 
 namespace RenderEngine
 {
-  VertexArray::VertexArray()
+  VertexArray::VertexArray() : m_elementsCount(0)
   {
     glGenVertexArrays(1, &m_ID);
   }
@@ -46,7 +46,7 @@ namespace RenderEngine
 
   void VertexArray::addBuffer(const VertexBuffer& buffer, const VertexBufferLayout& layout)
   {
-    glBindVertexArray(m_ID);
+    bind();
     buffer.bind();
     const auto& elements = layout.getLayoutElements();
     GLbyte* offset = nullptr;
@@ -54,13 +54,12 @@ namespace RenderEngine
     {
       const auto& currentLayoutElement = elements[i];
       GLuint currentAttribIndex = m_elementsCount + i;
-      glEnableVertexAttribArray(currentAttribIndex);
-      glVertexAttribPointer(currentAttribIndex, currentLayoutElement.size, currentLayoutElement.type, 
+      glVertexAttribPointer(currentAttribIndex, currentLayoutElement.count, currentLayoutElement.type, 
           currentLayoutElement.normalized, layout.getStride(), offset);
+      glEnableVertexAttribArray(currentAttribIndex);
       offset += currentLayoutElement.size;
     }
     m_elementsCount += static_cast<unsigned int>(elements.size());
   }
-
 
 }

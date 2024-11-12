@@ -6,9 +6,10 @@
 #include <iostream>
 #include <cmath>
 
+#include "Resources/ResourceManager.h"
+
 #include "Renderer/VertexBuffer.h"
 #include "Renderer/VertexBufferLayout.h"
-#include "Resources/ResourceManager.h"
 #include "Renderer/ShaderProgram.h"
 #include "Renderer/Texture2D.h"
 #include "Renderer/IndexBuffer.h"
@@ -32,6 +33,80 @@ GLuint elements[] = {
   0, 2, 3
 };
 
+GLenum checkError()
+{
+  GLenum error = glGetError();
+      switch (error)
+      {
+        case GL_INVALID_ENUM:
+          std::cout << "GL_INVALID_ENUM!\n";
+          break;
+        case GL_INVALID_VALUE:
+          std::cout << "GL_INVALID_VALUE!\n";
+          break;
+        case GL_INVALID_OPERATION:
+          std::cout << "GL_INVALID_OPERATION!\n";
+          break;
+        case GL_STACK_OVERFLOW:
+          std::cout << "GL_STACK_OVERFLOW!\n";
+          break;
+        case GL_OUT_OF_MEMORY:
+          std::cout << "GL_OUT_OF_MEMORY!\n";
+          break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+          std::cout << "GL_INVALID_FRAMEBUFFER_OPERATION!\n";
+          break;
+      }
+  return error;
+}
+
+void APIENTRY glDebugOutput(GLenum source, 
+                            GLenum type, 
+                            unsigned int id, 
+                            GLenum severity, 
+                            GLsizei length, 
+                            const char *message, 
+                            const void *userParam)
+{
+    // ignore non-significant error/warning codes
+    if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
+
+    std::cout << "---------------" << std::endl;
+    std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+
+    switch (source)
+    {
+        case GL_DEBUG_SOURCE_API:             std::cout << "Source: API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::cout << "Source: Window System"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: std::cout << "Source: Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party"; break;
+        case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application"; break;
+        case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other"; break;
+    } std::cout << std::endl;
+
+    switch (type)
+    {
+        case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break; 
+        case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
+        case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
+        case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
+        case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+    } std::cout << std::endl;
+    
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:         std::cout << "Severity: high"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium"; break;
+        case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
+    } std::cout << std::endl;
+    std::cout << std::endl;
+}
+
 int main(int argc, char** argv)
 {
   ResourceManager::setExecutablePath(argv[0]);
@@ -42,7 +117,9 @@ int main(int argc, char** argv)
     std::cout << "glfwInit failed!\n";
     return 1;
   }
-
+  
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+  glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -68,9 +145,25 @@ int main(int argc, char** argv)
   std::cout << "OpenGL version: " << glGetString(GL_VERSION) << "\n";
   std::cout << "OpenGL renderer: " << glGetString(GL_RENDERER) << "\n";
 
+  
+  int flags;
+  glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+  if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
   {
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(glDebugOutput, nullptr);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    std::cout << "OpenGL debug context loaded!\n";
+  }
+
+  {
+     
+    auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vertex.vert", "res/shaders/fragment.frag");
+    auto texture = ResourceManager::loadTexture("Grass", "res/textures/grass16x16.jpg", GL_REPEAT, GL_NEAREST);
 
     RenderEngine::VertexBufferLayout layout;
+    layout.reserve(3);                       //Optimization
     layout.addElementLayoutFloat(3, false);
     layout.addElementLayoutFloat(3, false);
     layout.addElementLayoutFloat(2, false);
@@ -79,14 +172,13 @@ int main(int argc, char** argv)
     buffer.init(vertices, sizeof(vertices));
 
     RenderEngine::IndexBuffer indexBuffer;
-    indexBuffer.init(elements, sizeof(elements));
+    indexBuffer.init(elements, 6);
 
     RenderEngine::VertexArray vertexArray;
     vertexArray.addBuffer(buffer, layout);
 
-    auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vertex.vert", "res/shaders/fragment.frag");
-    auto texture = ResourceManager::loadTexture("BrickWall", "res/textures/wall.jpg");
-
+    vertexArray.bind();
+    
     shader->use();
     shader->setInt(gWindowSize.x, "windowSizeX");
     shader->setInt(gWindowSize.y, "windowSizeY");
@@ -113,14 +205,14 @@ int main(int argc, char** argv)
 
       //std::cout << "Pos: " << pos << "\n";
 
+      shader->use();
       shader->setFloat(pos, "pos");
 
       glActiveTexture(GL_TEXTURE0);
       texture->bind();
-      indexBuffer.bind(); 
       vertexArray.bind();
-      shader->use();
-      
+      indexBuffer.bind(); 
+
       glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, nullptr);
 
       glfwSwapBuffers(window);

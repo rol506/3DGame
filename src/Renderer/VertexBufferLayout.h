@@ -11,7 +11,7 @@ namespace RenderEngine
 
     struct VertexBufferLayoutElement
     {
-      GLint count;
+      GLuint count;
       GLenum type;
       GLboolean normalized;
       unsigned int size;
