@@ -33,33 +33,6 @@ GLuint elements[] = {
   0, 2, 3
 };
 
-GLenum checkError()
-{
-  GLenum error = glGetError();
-      switch (error)
-      {
-        case GL_INVALID_ENUM:
-          std::cout << "GL_INVALID_ENUM!\n";
-          break;
-        case GL_INVALID_VALUE:
-          std::cout << "GL_INVALID_VALUE!\n";
-          break;
-        case GL_INVALID_OPERATION:
-          std::cout << "GL_INVALID_OPERATION!\n";
-          break;
-        case GL_STACK_OVERFLOW:
-          std::cout << "GL_STACK_OVERFLOW!\n";
-          break;
-        case GL_OUT_OF_MEMORY:
-          std::cout << "GL_OUT_OF_MEMORY!\n";
-          break;
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-          std::cout << "GL_INVALID_FRAMEBUFFER_OPERATION!\n";
-          break;
-      }
-  return error;
-}
-
 void APIENTRY glDebugOutput(GLenum source, 
                             GLenum type, 
                             unsigned int id, 
@@ -71,8 +44,7 @@ void APIENTRY glDebugOutput(GLenum source,
     // ignore non-significant error/warning codes
     if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
 
-    std::cout << "---------------" << std::endl;
-    std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+    std::cout << "\n[OpenGL debug message] (" << id << "): " <<  message << "\n";
 
     switch (source)
     {
@@ -82,7 +54,7 @@ void APIENTRY glDebugOutput(GLenum source,
         case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party"; break;
         case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application"; break;
         case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other"; break;
-    } std::cout << std::endl;
+    } std::cout << "\n";
 
     switch (type)
     {
@@ -95,7 +67,7 @@ void APIENTRY glDebugOutput(GLenum source,
         case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
         case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
         case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
-    } std::cout << std::endl;
+    } std::cout << "\n";
     
     switch (severity)
     {
@@ -103,8 +75,8 @@ void APIENTRY glDebugOutput(GLenum source,
         case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium"; break;
         case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low"; break;
         case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
-    } std::cout << std::endl;
-    std::cout << std::endl;
+    } std::cout << "\n";
+    std::cout << "[OpenGL debug message]\n";
 }
 
 int main(int argc, char** argv)
