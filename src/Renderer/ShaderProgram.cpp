@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace RenderEngine
 {
   bool ShaderProgram::createShader(GLuint& shaderID, const std::string& shaderSource, const GLenum& shaderType)
@@ -103,5 +105,10 @@ namespace RenderEngine
   void ShaderProgram::setFloat(const float value, const std::string& name)
   {
     glUniform1f(glGetUniformLocation(m_ID, name.c_str()), value);
+  }
+
+  void ShaderProgram::setMat4(const glm::mat4& matrix, const std::string& name)
+  {
+    glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
   }
 }

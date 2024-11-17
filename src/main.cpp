@@ -2,18 +2,21 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 #include <cmath>
+#include <chrono>
 
 #include "Resources/ResourceManager.h"
 
-#include "Renderer/VertexBuffer.h"
-#include "Renderer/VertexBufferLayout.h"
 #include "Renderer/ShaderProgram.h"
 #include "Renderer/Texture2D.h"
-#include "Renderer/IndexBuffer.h"
-#include "Renderer/VertexArray.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/Sprite.h"
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
 
 glm::ivec2 gWindowSize(960, 540);
 
@@ -26,9 +29,9 @@ GLfloat vertices[] = {
 };
 
 GLuint elements[] = {
-  //  0---3
-  //  | \ |
-  //  1---2
+  //  0 -- 3
+  //  |  \ |
+  //  1 -- 2
   0, 1, 2,
   0, 2, 3
 };
@@ -114,8 +117,8 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  std::cout << "OpenGL version: " << glGetString(GL_VERSION) << "\n";
-  std::cout << "OpenGL renderer: " << glGetString(GL_RENDERER) << "\n";
+  std::cout << "OpenGL version: " << RenderEngine::Renderer::getVersionStr() << "\n";
+  std::cout << "OpenGL renderer: " << RenderEngine::Renderer::getRendererStr() << "\n";
 
   
   int flags;
@@ -130,42 +133,62 @@ int main(int argc, char** argv)
   }
 
   {
-     
-    auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vertex.vert", "res/shaders/fragment.frag");
-    auto texture = ResourceManager::loadTexture("Grass", "res/textures/grass16x16.jpg", GL_REPEAT, GL_NEAREST);
-
-    RenderEngine::VertexBufferLayout layout;
-    layout.reserve(3);                       //Optimization
-    layout.addElementLayoutFloat(3, false);
-    layout.addElementLayoutFloat(3, false);
-    layout.addElementLayoutFloat(2, false);
-
-    RenderEngine::VertexBuffer buffer;
-    buffer.init(vertices, sizeof(vertices));
-
-    RenderEngine::IndexBuffer indexBuffer;
-    indexBuffer.init(elements, 6);
-
-    RenderEngine::VertexArray vertexArray;
-    vertexArray.addBuffer(buffer, layout);
-
-    vertexArray.bind();
     
+    std::vector<std::string> subTexturesNames = {"FRONT", "LEFT", "BACK", "RIGHT", "BOTTOM", "TOP"};
+    auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vSprite.vert", "res/shaders/fSprite.frag");
+    auto texture = ResourceManager::loadTextureAtlas("GRASS", "res/textures/grass16x16.jpg", 16, 16, subTexturesNames);
+    auto sprite = ResourceManager::loadSprite("GrassBlock", "DefaultShader", "GRASS", "FRONT");
+
+    glm::mat4 projection(1.0f);
+    projection = glm::perspective(glm::radians(60.f), (float)gWindowSize.x/(float)gWindowSize.y, 0.1f, 100.f);
+
+    glm::mat4 view(1.0f);
+    glm::vec3 size(1.0f);
+    glm::mat4 model(1.0f);
+
+    model = glm::translate(model, glm::vec3(0.0f));
+    model = glm::rotate(model, glm::radians(-55.f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
     shader->use();
-    shader->setInt(gWindowSize.x, "windowSizeX");
-    shader->setInt(gWindowSize.y, "windowSizeY");
+    shader->setMat4(projection, "projectionMatrix");
 
-    shader->setInt(0, "tex");
+    glm::vec3 rotation(0.0f);
 
-    glClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
+    //timing
+
+    auto lastTime = std::chrono::high_resolution_clock::now();
+    double deltaTime = 0;
+
+    RenderEngine::Renderer::setClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
     while (!glfwWindowShouldClose(window))
     {
-      glClear(GL_COLOR_BUFFER_BIT);
+      //timing
+
+      auto currentTime = std::chrono::high_resolution_clock::now();
+      deltaTime = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
+
+      //render
+      RenderEngine::Renderer::clear();
 
       if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       {
         glfwSetWindowShouldClose(window, true);
       }
+      
+      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        view = glm::translate(view, glm::vec3(0.f, -0.1f,   0.0f) * (float)deltaTime);
+      if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        view = glm::translate(view, glm::vec3(0.f, 0.1f, 0.0f) *  (float)deltaTime);
+      if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        view = glm::translate(view, glm::vec3(-0.1f, 0.f,   0.0f) * (float)deltaTime);
+      if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        view = glm::translate(view, glm::vec3(0.1f, 0.f, 0.0f) *  (float)deltaTime);
+      if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -0.1f) * (float)deltaTime);
+      if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f,  0.1f) * (float)deltaTime);
 
       float pos = glfwGetTime() / 5.f * gWindowSize.y / 500;
       if (pos >= 1.3f)
@@ -173,21 +196,20 @@ int main(int argc, char** argv)
         glfwSetTime(0);
       }
 
-      //float pos = sin(glfwGetTime());
-
-      //std::cout << "Pos: " << pos << "\n";
+      rotation += glm::vec3(0.0f, 0.0f, sin(glfwGetTime())/10);
 
       shader->use();
       shader->setFloat(pos, "pos");
 
-      glActiveTexture(GL_TEXTURE0);
-      texture->bind();
-      vertexArray.bind();
-      indexBuffer.bind(); 
+      shader->setMat4(view, "viewMatrix");
 
-      glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, nullptr);
+      sprite->render(glm::vec3(0.f, 0.f, 0.0f), glm::vec3(1.0f), rotation);
 
       glfwSwapBuffers(window);
+
+      //timing
+
+      lastTime = std::chrono::high_resolution_clock::now();
 
       glfwPollEvents();
     }

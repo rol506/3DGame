@@ -1,4 +1,5 @@
 #include "Texture2D.h"
+#include <ios>
 
 namespace RenderEngine
 {
@@ -45,10 +46,12 @@ namespace RenderEngine
       m_mode = texture.m_mode;
       m_width = texture.m_width;
       m_height = texture.m_height;
+      m_subTextures = std::move(texture.m_subTextures);
 
       texture.m_ID = 0;
       texture.m_width = 0;
       texture.m_height = 0;
+      texture.m_subTextures.clear();
     }
     return *this;
   }
@@ -59,14 +62,34 @@ namespace RenderEngine
     m_mode = texture.m_mode;
     m_width = texture.m_width;
     m_height = texture.m_height;
+    m_subTextures = std::move(texture.m_subTextures);
 
     texture.m_ID = 0;
     texture.m_width = 0;
     texture.m_height = 0;
+    texture.m_subTextures.clear();
   }
 
   void Texture2D::bind() const
   {
     glBindTexture(GL_TEXTURE_2D, m_ID);
   }
+
+  void Texture2D::addSubTexture(const std::string& name, const glm::vec2& leftBottomUV, const glm::vec2& rightTopUV)
+  {
+    m_subTextures.emplace(std::move(name), SubTexture2D(leftBottomUV, rightTopUV));
+  }
+
+  const Texture2D::SubTexture2D Texture2D::getSubTexture(const std::string& name) const
+  {
+    auto it = m_subTextures.find(name);
+    if (it != m_subTextures.end())
+    {
+      return it->second;
+    }
+
+    const static SubTexture2D defaultSubTexture;
+    return defaultSubTexture;
+  }
+
 }

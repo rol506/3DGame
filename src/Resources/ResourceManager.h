@@ -3,6 +3,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <glad/glad.h>
 
@@ -10,6 +11,7 @@ namespace RenderEngine
 {
   class ShaderProgram;
   class Texture2D;
+  class Sprite;
 }
 
 class ResourceManager
@@ -32,6 +34,13 @@ public:
   static std::shared_ptr<RenderEngine::Texture2D> loadTexture(const std::string& textureName, const std::string& texturePath,
                                                               const GLenum wrapMode=GL_CLAMP_TO_EDGE, const GLenum filter=GL_NEAREST);
   static std::shared_ptr<RenderEngine::Texture2D> getTexture(const std::string& textureName);
+  static std::shared_ptr<RenderEngine::Texture2D> loadTextureAtlas(const std::string& textureName, const std::string& texturePath,
+                                                                   const unsigned int width, const unsigned int height, const std::vector<std::string>& subTexturesNames,
+                                                                   const GLenum wrapMode=GL_CLAMP_TO_EDGE, const GLenum filter=GL_NEAREST);
+
+  static std::shared_ptr<RenderEngine::Sprite> loadSprite(const std::string& spriteName, const std::string& shaderName, const std::string& textureName,
+                                                          const std::string& subTextureName="Default");
+  static std::shared_ptr<RenderEngine::Sprite> getSprite(const std::string& spriteName);
 
 private:
 
@@ -44,5 +53,8 @@ private:
 
   typedef std::map<std::string, std::shared_ptr<RenderEngine::Texture2D>> TexturesMap;
   static TexturesMap m_textures;
+
+  typedef std::map<std::string, std::shared_ptr<RenderEngine::Sprite>> SpritesMap;
+  static SpritesMap m_sprites;
 
 };
