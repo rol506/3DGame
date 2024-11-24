@@ -107,4 +107,97 @@ namespace RenderEngine
     Renderer::draw(m_vertexArray, m_indexBuffer, *m_shaderProgram);
   }
 
+  void Sprite::setSubTexture(const std::string& subTexture)
+  {
+    auto subTex = m_texture->getSubTexture(std::move(subTexture));
+
+    const GLfloat vertices[] = 
+    {
+      // 1 - 2
+      // | / |
+      // 0 - 3
+
+      //X     Y     Z             U                          V
+       0.0f,  0.0f, 0.0f, subTex.leftBottomUV.x, subTex.leftBottomUV.y,  // 0
+       0.0f,  1.0f, 0.0f, subTex.leftBottomUV.x, subTex.rightTopUV.y,    // 1
+       1.0f,  1.0f, 0.0f, subTex.rightTopUV.x,   subTex.rightTopUV.y,    // 2
+       1.0f,  0.0f, 0.0f, subTex.rightTopUV.x,   subTex.leftBottomUV.y   // 3
+    };
+
+    const GLuint indices[] = 
+    {
+      0, 1, 2,
+      0, 2, 3
+    };
+
+    VertexArray vertexArray;
+    VertexBuffer vertexBuffer;
+    IndexBuffer indexBuffer;
+
+    RenderEngine::VertexBufferLayout layout;
+    layout.reserve(2);
+    layout.addElementLayoutFloat(3, false);
+    layout.addElementLayoutFloat(2, false);
+
+    vertexBuffer.init(vertices, sizeof(vertices));
+    
+    vertexArray.addBuffer(vertexBuffer, layout);
+
+    indexBuffer.init(indices, 6);
+
+    vertexBuffer.unbind();
+    vertexArray.unbind();
+
+    m_vertexArray = std::move(vertexArray);
+    m_vertexBuffer = std::move(vertexBuffer);
+    m_indexBuffer = std::move(indexBuffer);
+  }
+
+  void Sprite::setSubTexture(std::shared_ptr<Texture2D> texture, const std::string& subTexture)
+  {
+    m_texture = std::move(texture);
+    auto subTex = m_texture->getSubTexture(std::move(subTexture));
+
+    const GLfloat vertices[] = 
+    {
+      // 1 - 2
+      // | / |
+      // 0 - 3
+
+      //X     Y     Z             U                          V
+       0.0f,  0.0f, 0.0f, subTex.leftBottomUV.x, subTex.leftBottomUV.y,  // 0
+       0.0f,  1.0f, 0.0f, subTex.leftBottomUV.x, subTex.rightTopUV.y,    // 1
+       1.0f,  1.0f, 0.0f, subTex.rightTopUV.x,   subTex.rightTopUV.y,    // 2
+       1.0f,  0.0f, 0.0f, subTex.rightTopUV.x,   subTex.leftBottomUV.y   // 3
+    };
+
+    const GLuint indices[] = 
+    {
+      0, 1, 2,
+      0, 2, 3
+    };
+
+    VertexArray vertexArray;
+    VertexBuffer vertexBuffer;
+    IndexBuffer indexBuffer;
+
+    RenderEngine::VertexBufferLayout layout;
+    layout.reserve(2);
+    layout.addElementLayoutFloat(3, false);
+    layout.addElementLayoutFloat(2, false);
+
+    vertexBuffer.init(vertices, sizeof(vertices));
+    
+    vertexArray.addBuffer(vertexBuffer, layout);
+
+    indexBuffer.init(indices, 6);
+
+    vertexBuffer.unbind();
+    vertexArray.unbind();
+
+    m_vertexArray = std::move(vertexArray);
+    m_vertexBuffer = std::move(vertexBuffer);
+    m_indexBuffer = std::move(indexBuffer);
+  }
+
 }

@@ -25,6 +25,8 @@ namespace RenderEngine
     Sprite(Sprite&& sprite) noexcept;
 
     void render(const glm::vec3& position, const glm::vec3& size, const glm::vec3& rotation);
+    void setSubTexture(const std::string& subTexture);
+    void setSubTexture(std::shared_ptr<Texture2D> texture, const std::string& subTexture);
 
   private:
 
