@@ -28,6 +28,9 @@ void ResourceManager::setExecutablePath(const std::string& path)
 void ResourceManager::unloadAllResources()
 {
   m_shaderPrograms.clear();
+  m_textures.clear();
+  m_sprites.clear();
+  m_path.clear();
 }
 
 std::string ResourceManager::getFileString(const std::string& relativeFilePath)

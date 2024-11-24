@@ -10,13 +10,17 @@
 #include <chrono>
 
 #include "Resources/ResourceManager.h"
-
 #include "Renderer/ShaderProgram.h"
 #include "Renderer/Texture2D.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Sprite.h"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include "Game/Game.h"
+
+#include "Game/GameStates/GameStateTest.h"
+
+#include <memory>
+
+std::shared_ptr<Game> gGame;
 
 glm::ivec2 gWindowSize(960, 540);
 
@@ -35,6 +39,21 @@ GLuint elements[] = {
   0, 1, 2,
   0, 2, 3
 };
+
+void glfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+  gGame->setFramebufferSize(width, height);
+}
+
+void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+  {
+    glfwSetWindowShouldClose(window, true);
+  }
+
+  gGame->setKey(key, action);
+}
 
 void APIENTRY glDebugOutput(GLenum source, 
                             GLenum type, 
@@ -82,6 +101,13 @@ void APIENTRY glDebugOutput(GLenum source,
     std::cout << "[OpenGL debug message]\n";
 }
 
+void clear()
+{
+  ResourceManager::unloadAllResources();
+  glfwTerminate();
+  std::cout << "Main resources are cleared!\n";
+}
+
 int main(int argc, char** argv)
 {
   ResourceManager::setExecutablePath(argv[0]);
@@ -94,11 +120,9 @@ int main(int argc, char** argv)
   }
   
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-  glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
   GLFWwindow* window = glfwCreateWindow(gWindowSize.x, gWindowSize.y, "3DGame by rol506", NULL, NULL);
   if (!window)
@@ -120,7 +144,9 @@ int main(int argc, char** argv)
   std::cout << "OpenGL version: " << RenderEngine::Renderer::getVersionStr() << "\n";
   std::cout << "OpenGL renderer: " << RenderEngine::Renderer::getRendererStr() << "\n";
 
-  
+  glfwSetKeyCallback(window, glfwKeyCallback);
+  glfwSetFramebufferSizeCallback(window, glfwFramebufferSizeCallback);
+
   int flags;
   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
   if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
@@ -133,28 +159,13 @@ int main(int argc, char** argv)
   }
 
   {
-    
-    std::vector<std::string> subTexturesNames = {"FRONT", "LEFT", "BACK", "RIGHT", "BOTTOM", "TOP"};
-    auto shader = ResourceManager::loadShaders("DefaultShader", "res/shaders/vSprite.vert", "res/shaders/fSprite.frag");
-    auto texture = ResourceManager::loadTextureAtlas("GRASS", "res/textures/grass16x16.jpg", 16, 16, subTexturesNames);
-    auto sprite = ResourceManager::loadSprite("GrassBlock", "DefaultShader", "GRASS", "FRONT");
+    gGame = std::make_shared<Game>(window);
+    auto gameStateTest = std::make_shared<GameStateTest>();
+    gGame->setGameState(gameStateTest);
 
-    glm::mat4 projection(1.0f);
-    projection = glm::perspective(glm::radians(60.f), (float)gWindowSize.x/(float)gWindowSize.y, 0.1f, 100.f);
-
-    glm::mat4 view(1.0f);
-    glm::vec3 size(1.0f);
-    glm::mat4 model(1.0f);
-
-    model = glm::translate(model, glm::vec3(0.0f));
-    model = glm::rotate(model, glm::radians(-55.f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-    shader->use();
-    shader->setMat4(projection, "projectionMatrix");
-
-    glm::vec3 rotation(0.0f);
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    gGame->setFramebufferSize(width, height);
 
     //timing
 
@@ -162,59 +173,29 @@ int main(int argc, char** argv)
     double deltaTime = 0;
 
     RenderEngine::Renderer::setClearColor(66.0f/255, 170.0f/255, 255.0f/255, 1.0f);
+    RenderEngine::Renderer::setDepthTest(true);
     while (!glfwWindowShouldClose(window))
     {
-      //timing
 
+      //timing
       auto currentTime = std::chrono::high_resolution_clock::now();
       deltaTime = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
 
       //render
       RenderEngine::Renderer::clear();
 
-      if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      {
-        glfwSetWindowShouldClose(window, true);
-      }
-      
-      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        view = glm::translate(view, glm::vec3(0.f, -0.1f,   0.0f) * (float)deltaTime);
-      if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        view = glm::translate(view, glm::vec3(0.f, 0.1f, 0.0f) *  (float)deltaTime);
-      if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        view = glm::translate(view, glm::vec3(-0.1f, 0.f,   0.0f) * (float)deltaTime);
-      if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        view = glm::translate(view, glm::vec3(0.1f, 0.f, 0.0f) *  (float)deltaTime);
-      if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -0.1f) * (float)deltaTime);
-      if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f,  0.1f) * (float)deltaTime);
-
-      float pos = glfwGetTime() / 5.f * gWindowSize.y / 500;
-      if (pos >= 1.3f)
-      {
-        glfwSetTime(0);
-      }
-
-      rotation += glm::vec3(0.0f, 0.0f, sin(glfwGetTime())/10);
-
-      shader->use();
-      shader->setFloat(pos, "pos");
-
-      shader->setMat4(view, "viewMatrix");
-
-      sprite->render(glm::vec3(0.f, 0.f, 0.0f), glm::vec3(1.0f), rotation);
+      gGame->update(deltaTime);
 
       glfwSwapBuffers(window);
 
       //timing
-
       lastTime = std::chrono::high_resolution_clock::now();
 
       glfwPollEvents();
     }
-
-    glfwTerminate();
+    
+    //clear resources and shutdown
+    clear();
     return 0;
   }
 }
