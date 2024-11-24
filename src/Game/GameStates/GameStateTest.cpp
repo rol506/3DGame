@@ -8,12 +8,14 @@
 
 #include <iostream>
 
-GameStateTest::GameStateTest(): m_viewMatrix(1.0f), m_framebufferWidth(0), m_framebufferHeight(0)
+GameStateTest::GameStateTest(): m_viewMatrix(1.0f), m_framebufferWidth(0), m_framebufferHeight(0), m_currentSubTexIndex(0)
 {
   m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, 0.0f, -3.0f));
-  m_shader = ResourceManager::getShaderProgram("SpriteShader");
+  m_shader = ResourceManager::getShaderProgram("SpriteShader"); 
   m_sprite = ResourceManager::loadSprite("GRASSBLOCK", "SpriteShader", "GRASS", "FRONT");
   
+  m_blockSubTexNames = {"FRONT", "LEFT", "BACK", "RIGHT", "BOTTOM", "TOP"};
+
   m_shader->use();
   m_shader->setMat4(m_viewMatrix, "viewMatrix");
   std::cout << "Game state initialized!\n";
@@ -67,6 +69,21 @@ void GameStateTest::update(const double deltaTime)
     m_shader->use();
     m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, 0.0f,  0.2f) * static_cast<float>(deltaTime));
     m_shader->setMat4(m_viewMatrix, "viewMatrix");
+  }
+
+  if (m_keys[GLFW_KEY_KP_ADD])
+  {
+    m_currentSubTexIndex++;
+    if (m_currentSubTexIndex > m_blockSubTexNames.size()-1)
+      m_currentSubTexIndex = 0;
+    m_sprite->setSubTexture(m_blockSubTexNames[m_currentSubTexIndex]);
+  }
+  if (m_keys[GLFW_KEY_KP_SUBTRACT])
+  {
+    m_currentSubTexIndex--;
+    if (m_currentSubTexIndex < 0)
+      m_currentSubTexIndex = m_blockSubTexNames.size()-1;
+    m_sprite->setSubTexture(m_blockSubTexNames[m_currentSubTexIndex]);
   }
 }
 

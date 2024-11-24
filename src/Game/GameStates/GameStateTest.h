@@ -7,6 +7,7 @@
 
 #include "../../Renderer/Sprite.h"
 #include <memory>
+#include <string>
 
 class GameStateTest : public IGameState
 {
@@ -34,5 +35,8 @@ private:
   std::shared_ptr<RenderEngine::Sprite>        m_sprite;
 
   std::array<bool, 349> m_keys;
+  std::array<std::string, 6> m_blockSubTexNames;
+
+  int m_currentSubTexIndex;
 
 };
