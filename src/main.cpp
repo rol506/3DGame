@@ -6,19 +6,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include <cmath>
 #include <chrono>
+#include <memory>
 
 #include "Resources/ResourceManager.h"
-#include "Renderer/ShaderProgram.h"
-#include "Renderer/Texture2D.h"
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Game/Game.h"
 
 #include "Game/GameStates/GameStateTest.h"
-
-#include <memory>
 
 std::shared_ptr<Game> gGame;
 
@@ -144,6 +139,7 @@ int main(int argc, char** argv)
   std::cout << "OpenGL version: " << RenderEngine::Renderer::getVersionStr() << "\n";
   std::cout << "OpenGL renderer: " << RenderEngine::Renderer::getRendererStr() << "\n";
 
+
   glfwSetKeyCallback(window, glfwKeyCallback);
   glfwSetFramebufferSizeCallback(window, glfwFramebufferSizeCallback);
 
@@ -180,7 +176,7 @@ int main(int argc, char** argv)
       //timing
       auto currentTime = std::chrono::high_resolution_clock::now();
       deltaTime = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
-
+    
       //render
       RenderEngine::Renderer::clear();
 

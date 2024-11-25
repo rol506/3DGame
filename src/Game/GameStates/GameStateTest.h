@@ -35,6 +35,7 @@ private:
   std::shared_ptr<RenderEngine::Sprite>        m_sprite;
 
   std::array<bool, 349> m_keys;
+  std::array<bool, 349> m_keysOld;
   std::array<std::string, 6> m_blockSubTexNames;
 
   int m_currentSubTexIndex;
