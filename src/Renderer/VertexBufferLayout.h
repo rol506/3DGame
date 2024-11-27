@@ -18,6 +18,7 @@ namespace RenderEngine
     };
 
     VertexBufferLayout();
+    ~VertexBufferLayout();
 
     void reserve(const size_t count);
     unsigned int getStride() const {return m_stride;}

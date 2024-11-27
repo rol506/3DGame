@@ -15,4 +15,10 @@ namespace RenderEngine
     m_layoutElements.push_back({count, GL_FLOAT, normalized, count * static_cast<unsigned int>(sizeof(GLfloat))}); 
     m_stride += m_layoutElements.back().size;
   }
+
+  VertexBufferLayout::~VertexBufferLayout()
+  {
+    m_layoutElements.clear();
+    m_stride = 0;
+  }
 }

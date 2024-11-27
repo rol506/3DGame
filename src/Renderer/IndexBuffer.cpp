@@ -11,6 +11,8 @@ namespace RenderEngine
   {
     if (this != &buffer)
     {
+      glDeleteBuffers(1, &m_ID);
+
       m_ID = buffer.m_ID;
       m_count = buffer.m_count;
 

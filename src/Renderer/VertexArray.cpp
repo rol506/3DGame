@@ -16,6 +16,8 @@ namespace RenderEngine
   {
     if (this != &array)
     {
+      glDeleteVertexArrays(1, &m_ID);
+
       m_ID = array.m_ID;
       m_elementsCount = array.m_elementsCount;
 
