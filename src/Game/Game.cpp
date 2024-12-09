@@ -53,6 +53,11 @@ void Game::setKey(const int key, const int action)
   m_gameState->processInput(m_keys);
 }
 
+void Game::setMouse(const double xoffset, const double yoffset)
+{
+  m_gameState->processMouseInput(xoffset, yoffset);
+}
+
 void Game::setGameState(std::shared_ptr<IGameState> gameStatePtr)
 {
   m_gameState = gameStatePtr;

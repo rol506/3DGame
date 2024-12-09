@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "../../Renderer/Camera.h"
+
 class GameStateTest : public IGameState
 {
 public:
@@ -19,14 +21,13 @@ public:
   void render() const;
   void update(const double deltaTime);
   void processInput(std::array<bool, 349> keys);
+  void processMouseInput(double xoffset, double yoffset);
   void setFramebufferSize(int width, int height);
 
   unsigned int getStateWidth() const {return m_framebufferWidth;}
   unsigned int getStateHeight() const {return m_framebufferHeight;}
 
 private:
-
-  glm::mat4 m_viewMatrix;
 
   int m_framebufferWidth;
   int m_framebufferHeight;
@@ -39,5 +40,7 @@ private:
   std::array<std::string, 6> m_blockSubTexNames;
 
   int m_currentSubTexIndex;
+
+  std::shared_ptr<RenderEngine::Camera> m_camera;
 
 };

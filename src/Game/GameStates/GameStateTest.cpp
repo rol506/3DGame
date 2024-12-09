@@ -1,25 +1,29 @@
 #include "GameStateTest.h"
 
 #include "../../Resources/ResourceManager.h"
-#include "glm/ext/matrix_transform.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <memory>
 
-GameStateTest::GameStateTest(): m_viewMatrix(1.0f), m_framebufferWidth(0), m_framebufferHeight(0), m_currentSubTexIndex(0)
+GameStateTest::GameStateTest(): m_framebufferWidth(0), m_framebufferHeight(0), m_currentSubTexIndex(0)
 {
   m_keys.fill(false);
   m_keysOld.fill(false);
-  m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, 0.0f, -3.0f));
+  
+  m_camera = std::make_shared<RenderEngine::Camera>(glm::vec3(0.0f));
+  m_camera->setPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+
   m_shader = ResourceManager::getShaderProgram("SpriteShader"); 
   m_sprite = ResourceManager::loadSprite("GRASSBLOCK", "SpriteShader", "GRASS", "FRONT");
   
   m_blockSubTexNames = {"FRONT", "LEFT", "BACK", "RIGHT", "BOTTOM", "TOP"};
 
   m_shader->use();
-  m_shader->setMat4(m_viewMatrix, "viewMatrix");
+  m_shader->setMat4(m_camera->getViewMatrix(), "viewMatrix");
+
   std::cout << "Game state initialized!\n";
 }
 
@@ -30,6 +34,7 @@ GameStateTest::~GameStateTest()
 
 void GameStateTest::render() const
 { 
+  m_shader->setMat4(m_camera->getViewMatrix(), "viewMatrix");
   m_sprite->render(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f)); 
 }
 
@@ -39,28 +44,28 @@ void GameStateTest::update(const double deltaTime)
   if (m_keys[GLFW_KEY_W])
   {
     m_shader->use();
-    m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, -0.2f, 0.0f) * static_cast<float>(deltaTime));
-    m_shader->setMat4(m_viewMatrix, "viewMatrix");
+    //m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, -0.2f, 0.0f) * static_cast<float>(deltaTime));
+    m_camera->processKeyboard(EMoveDirection::FORWARD, deltaTime);
   }
   if (m_keys[GLFW_KEY_S])
   {
     m_shader->use();
-    m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f,  0.2f, 0.0f) * static_cast<float>(deltaTime));
-    m_shader->setMat4(m_viewMatrix, "viewMatrix");
+    //m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f,  0.2f, 0.0f) * static_cast<float>(deltaTime));
+    m_camera->processKeyboard(EMoveDirection::BACKWARD, deltaTime);
   }
   if (m_keys[GLFW_KEY_A])
   {
     m_shader->use();
-    m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3( 0.2f, 0.0f, 0.0f) * static_cast<float>(deltaTime));
-    m_shader->setMat4(m_viewMatrix, "viewMatrix");
+    //m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3( 0.2f, 0.0f, 0.0f) * static_cast<float>(deltaTime));
+    m_camera->processKeyboard(EMoveDirection::LEFT, deltaTime);
   }
   if (m_keys[GLFW_KEY_D])
   {
     m_shader->use();
-    m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(-0.2f, 0.0f, 0.0f) * static_cast<float>(deltaTime));
-    m_shader->setMat4(m_viewMatrix, "viewMatrix");
+    //m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(-0.2f, 0.0f, 0.0f) * static_cast<float>(deltaTime));
+    m_camera->processKeyboard(EMoveDirection::RIGHT, deltaTime);
   }
-  if (m_keys[GLFW_KEY_Z])
+  /*if (m_keys[GLFW_KEY_Z])
   {
     m_shader->use();
     m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, 0.0f, -0.2f) * static_cast<float>(deltaTime));
@@ -71,7 +76,7 @@ void GameStateTest::update(const double deltaTime)
     m_shader->use();
     m_viewMatrix = glm::translate(m_viewMatrix, glm::vec3(0.0f, 0.0f,  0.2f) * static_cast<float>(deltaTime));
     m_shader->setMat4(m_viewMatrix, "viewMatrix");
-  }
+  }*/
 
   if (m_keysOld[GLFW_KEY_KP_ADD] && !m_keys[GLFW_KEY_KP_ADD])
   {
@@ -100,6 +105,11 @@ void GameStateTest::processInput(std::array<bool, 349> keys)
 {
   m_keysOld = m_keys;
   m_keys = keys;
+}
+
+void GameStateTest::processMouseInput(double xoffset, double yoffset)
+{
+  m_camera->processMouse(xoffset, yoffset);
 }
 
 void GameStateTest::setFramebufferSize(int width, int height)

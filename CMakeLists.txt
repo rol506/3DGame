@@ -24,6 +24,8 @@ add_executable(${PROJECT_NAME}
   src/Renderer/Renderer.h
   src/Renderer/Sprite.cpp
   src/Renderer/Sprite.h
+  src/Renderer/Camera.cpp
+  src/Renderer/Camera.h
 
   src/Resources/ResourceManager.cpp
   src/Resources/ResourceManager.h

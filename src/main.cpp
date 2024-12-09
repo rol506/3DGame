@@ -17,7 +17,12 @@
 
 std::shared_ptr<Game> gGame;
 
+bool paused = false;
+
 glm::ivec2 gWindowSize(960, 540);
+
+//cursor
+double lastX, lastY;
 
 GLfloat vertices[] = {
   //X      Y     Z     R     G     B     U     V
@@ -35,19 +40,43 @@ GLuint elements[] = {
   0, 2, 3
 };
 
-void glfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
-{
+static void glfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
+{ 
   gGame->setFramebufferSize(width, height);
 }
 
-void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
+static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
   {
     glfwSetWindowShouldClose(window, true);
+  } else if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+  {
+    if (paused)
+    {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      glfwSetCursorPos(window, gWindowSize.x/2.f, gWindowSize.y/2.f);
+      glfwGetCursorPos(window, &lastX, &lastY);
+      paused = false;
+    } else {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      glfwSetCursorPos(window, gWindowSize.x/2.f, gWindowSize.y/2.f);
+      glfwGetCursorPos(window, &lastX, &lastY);
+      paused = true;
+    }
   }
 
   gGame->setKey(key, action);
+}
+
+static void glfwCursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+{
+  if (!paused)
+  {
+    gGame->setMouse(xpos - lastX, lastY - ypos);
+    lastX = xpos;
+    lastY = ypos;
+  } 
 }
 
 void APIENTRY glDebugOutput(GLenum source, 
@@ -136,12 +165,16 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetCursorPos(window, gWindowSize.x/2.f, gWindowSize.y/2.f);
+  glfwGetCursorPos(window, &lastX, &lastY);
+
   std::cout << "OpenGL version: " << RenderEngine::Renderer::getVersionStr() << "\n";
   std::cout << "OpenGL renderer: " << RenderEngine::Renderer::getRendererStr() << "\n";
 
-
   glfwSetKeyCallback(window, glfwKeyCallback);
   glfwSetFramebufferSizeCallback(window, glfwFramebufferSizeCallback);
+  glfwSetCursorPosCallback(window, glfwCursorPosCallback);
 
   int flags;
   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);

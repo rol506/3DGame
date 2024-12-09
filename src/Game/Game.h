@@ -5,7 +5,6 @@
 #include "GameStates/IGameState.h"
 
 #include <GLFW/glfw3.h>
-
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
 
@@ -27,6 +26,7 @@ public:
   void setFramebufferSize(int width, int height);
 
   void setKey(const int key, const int action);
+  void setMouse(const double xoffset, const double yoffset);
 
 private:
 
