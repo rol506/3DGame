@@ -3,7 +3,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <cmath>
-#include <iostream>
 
 namespace RenderEngine
 {
@@ -73,13 +72,11 @@ namespace RenderEngine
       else if (m_pitch < -89.0f)
         m_pitch = -89.0f;
 
-      if (m_yaw > 360.f)
-        m_yaw = 0;
-      else if (m_yaw < 0.0f)
-        m_yaw = 360.f;
+      if (m_yaw > 359.f)
+        m_yaw = 1.f;
+      else if (m_yaw < 1.0f)
+        m_yaw = 359.f;
     }
-
-    std::cout << "yaw: " << m_yaw << " pitch: " << m_pitch << std::endl;
 
     updateCameraVectors();
   }

@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "../GameObjects/Grass.h"
+
 #include "../../Renderer/Camera.h"
 
 class GameStateTest : public IGameState
@@ -28,6 +30,8 @@ public:
   unsigned int getStateHeight() const {return m_framebufferHeight;}
 
 private:
+
+  std::shared_ptr<Grass> m_grass;
 
   int m_framebufferWidth;
   int m_framebufferHeight;

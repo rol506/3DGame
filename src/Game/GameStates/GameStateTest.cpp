@@ -17,12 +17,13 @@ GameStateTest::GameStateTest(): m_framebufferWidth(0), m_framebufferHeight(0), m
   m_camera->setPosition(glm::vec3(0.0f, 0.0f, 3.0f));
 
   m_shader = ResourceManager::getShaderProgram("SpriteShader"); 
-  m_sprite = ResourceManager::loadSprite("GRASSBLOCK", "SpriteShader", "GRASS", "FRONT");
   
   m_blockSubTexNames = {"FRONT", "LEFT", "BACK", "RIGHT", "BOTTOM", "TOP"};
 
   m_shader->use();
   m_shader->setMat4(m_camera->getViewMatrix(), "viewMatrix");
+
+  m_grass = std::make_shared<Grass>(glm::vec3(1.0f, 0.0f, 0.0f));
 
   std::cout << "Game state initialized!\n";
 }
@@ -35,7 +36,7 @@ GameStateTest::~GameStateTest()
 void GameStateTest::render() const
 { 
   m_shader->setMat4(m_camera->getViewMatrix(), "viewMatrix");
-  m_sprite->render(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f)); 
+  m_grass->render();
 }
 
 void GameStateTest::update(const double deltaTime)
@@ -78,7 +79,7 @@ void GameStateTest::update(const double deltaTime)
     m_shader->setMat4(m_viewMatrix, "viewMatrix");
   }*/
 
-  if (m_keysOld[GLFW_KEY_KP_ADD] && !m_keys[GLFW_KEY_KP_ADD])
+  /*if (m_keysOld[GLFW_KEY_KP_ADD] && !m_keys[GLFW_KEY_KP_ADD])
   {
     m_currentSubTexIndex++;
     if (m_currentSubTexIndex > m_blockSubTexNames.size()-1)
@@ -98,7 +99,7 @@ void GameStateTest::update(const double deltaTime)
 
     //clear old
     m_keysOld[GLFW_KEY_KP_SUBTRACT] = 0;
-  }
+  }*/
 }
 
 void GameStateTest::processInput(std::array<bool, 349> keys)
