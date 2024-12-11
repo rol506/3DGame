@@ -36,7 +36,11 @@ add_executable(${PROJECT_NAME}
   src/Game/GameStates/IGameState.h
   src/Game/GameStates/GameStateTest.cpp
   src/Game/GameStates/GameStateTest.h
+
   src/Game/GameObjects/IGameObject.h
+  src/Game/GameObjects/Block.cpp
+  src/Game/GameObjects/Block.h
+
   src/Game/GameObjects/Grass.cpp
   src/Game/GameObjects/Grass.h
 )
