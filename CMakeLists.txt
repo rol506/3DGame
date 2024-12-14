@@ -41,8 +41,10 @@ add_executable(${PROJECT_NAME}
   src/Game/GameObjects/Block.cpp
   src/Game/GameObjects/Block.h
 
-  src/Game/GameObjects/Grass.cpp
-  src/Game/GameObjects/Grass.h
+  src/Game/GameObjects/Chunk.cpp
+  src/Game/GameObjects/Chunk.h
+
+  src/Game/GameObjects/BlockTypes.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

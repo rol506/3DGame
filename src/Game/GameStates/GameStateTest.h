@@ -9,9 +9,9 @@
 #include <memory>
 #include <string>
 
-#include "../GameObjects/Grass.h"
-
 #include "../../Renderer/Camera.h"
+
+#include "../GameObjects/Chunk.h"
 
 class GameStateTest : public IGameState
 {
@@ -31,8 +31,6 @@ public:
 
 private:
 
-  std::shared_ptr<Grass> m_grass;
-
   int m_framebufferWidth;
   int m_framebufferHeight;
 
@@ -46,5 +44,7 @@ private:
   int m_currentSubTexIndex;
 
   std::shared_ptr<RenderEngine::Camera> m_camera;
+
+  std::shared_ptr<Chunk> m_chunk;
 
 };

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "IGameObject.h"
-
 #include <glm/vec3.hpp>
 
 #include "../../Renderer/ShaderProgram.h"
@@ -9,25 +7,32 @@
 #include "../../Renderer/VertexArray.h"
 #include "../../Renderer/IndexBuffer.h"
 
+#include "BlockTypes.h"
+
 #include <memory>
 
-class Block : IGameObject
+class Block
 {
 public:
 
-  virtual void render() const = 0;
+  Block(EBlockType blockType, const glm::ivec3 position = glm::vec3(0.0f));
+  ~Block();
 
-  virtual glm::vec3 getPosition() const = 0;
-  virtual void setPosition(glm::vec3 position) = 0;
+  Block(const Block& block) = delete;
+  Block& operator=(const Block& block) = delete;
+  Block& operator=(Block&& block) noexcept;
+  Block(Block&& block) noexcept;
 
-  virtual glm::vec3 getRotation() const {return glm::vec3(0.0f);}
-  virtual void setRotation(glm::vec3 rotation) {};
+  void render(const glm::vec3 chunkPosition = glm::vec3(0.0f)) const;
 
-protected:
+  void setPosition(const glm::ivec3 position);
+  const glm::ivec3 getPosition() const;
+
+private:
 
   void init(std::shared_ptr<RenderEngine::Texture2D> texture);
 
-  void renderMesh() const;
+  void renderMesh(const glm::vec3 chunkPosition) const;
 
   RenderEngine::VertexArray m_vertexArray;
   RenderEngine::VertexBuffer m_vertexCoordsBuffer;
@@ -37,6 +42,5 @@ protected:
   std::shared_ptr<RenderEngine::ShaderProgram> m_shader;
   std::shared_ptr<RenderEngine::Texture2D> m_texture;
 
-  glm::vec3 m_position;
-
+  glm::ivec3 m_position;
 };

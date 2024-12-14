@@ -3,6 +3,7 @@
 #include "../../Resources/ResourceManager.h"
 
 #include "../../Renderer/Renderer.h"
+#include "glm/ext/matrix_transform.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -10,9 +11,6 @@ void Block::init(std::shared_ptr<RenderEngine::Texture2D> texture)
 {
   m_shader = ResourceManager::getShaderProgram("SpriteShader");
   m_texture = texture;
-
-  m_shader = ResourceManager::getShaderProgram("SpriteShader");
-  m_texture = ResourceManager::getTexture("GRASS");
 
   auto& front  = m_texture->getSubTexture("FRONT");
   auto& left   = m_texture->getSubTexture("LEFT");
@@ -118,12 +116,13 @@ void Block::init(std::shared_ptr<RenderEngine::Texture2D> texture)
   m_vertexCoordsBuffer.unbind(); 
 }
 
-void Block::renderMesh() const
+void Block::renderMesh(const glm::vec3 chunkPosition) const
 {
   m_shader->use();
 
   glm::mat4 model(1.0f);
-  model = glm::translate(model, m_position);
+  model = glm::translate(model, glm::vec3(m_position.x, m_position.y, m_position.z));
+  model = glm::translate(model, glm::vec3(chunkPosition.x, chunkPosition.y, chunkPosition.z));
 
   m_shader->setInt(0, "tex");
   glActiveTexture(GL_TEXTURE0);
@@ -134,4 +133,77 @@ void Block::renderMesh() const
 
   RenderEngine::Renderer::draw(m_vertexArray, m_indexBuffer, *m_shader);
 }
+
+Block::Block(EBlockType blockType, const glm::ivec3 position)
+  : m_position(position)
+{
+  std::shared_ptr<RenderEngine::Texture2D> texture = ResourceManager::getTexture(BlockTypes[blockType].textureName);
+  init(texture);
+}
+
+Block::~Block()
+{
+}
+
+Block& Block::operator=(Block&& block) noexcept
+{
+  if (this != &block)
+  {
+
+    m_vertexArray = std::move(block.m_vertexArray);
+    m_vertexCoordsBuffer = std::move(block.m_vertexCoordsBuffer);
+    m_textureCoordsBuffer = std::move(block.m_textureCoordsBuffer);
+    m_indexBuffer = std::move(m_indexBuffer);
+
+    m_shader = std::move(block.m_shader);
+    m_texture = std::move(block.m_texture);
+
+    m_position = block.m_position;
+  }
+
+  return *this;
+}
+
+Block::Block(Block&& block) noexcept
+{
+  m_vertexArray = std::move(block.m_vertexArray);
+  m_vertexCoordsBuffer = std::move(block.m_vertexCoordsBuffer);
+  m_textureCoordsBuffer = std::move(block.m_textureCoordsBuffer);
+  m_indexBuffer = std::move(m_indexBuffer);
+
+  m_shader = std::move(block.m_shader);
+  m_texture = std::move(block.m_texture);
+
+  m_position = block.m_position;
+}
+
+void Block::render(const glm::vec3 chunkPosition) const
+{
+  renderMesh(chunkPosition);
+}
+
+void Block::setPosition(const glm::ivec3 position)
+{
+  glm::ivec3 pos(0.0f);
+
+  if (position.x > 15)
+  {
+    pos.x = (position.x % 16);
+    pos.y += position.x / 16;
+  }
+
+  if (position.z > 15)
+  {
+    pos.z = (position.z % 16);
+    pos.y += position.z / 16;
+  }
+
+  m_position = pos;
+}
+
+const glm::ivec3 Block::getPosition() const
+{
+  return m_position;
+}
+
 

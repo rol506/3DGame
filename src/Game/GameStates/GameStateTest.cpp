@@ -23,7 +23,33 @@ GameStateTest::GameStateTest(): m_framebufferWidth(0), m_framebufferHeight(0), m
   m_shader->use();
   m_shader->setMat4(m_camera->getViewMatrix(), "viewMatrix");
 
-  m_grass = std::make_shared<Grass>(glm::vec3(1.0f, 0.0f, 0.0f));
+  m_chunk = std::make_shared<Chunk>(glm::vec3(0.0f));
+
+  //generate world
+
+  int X = 0, Y = 0, Z = 0;
+
+  for (int i=0;i<16*16;++i)
+  {
+    if (X>CHUNK_WIDTH-1)
+    {
+      X = 0;
+      Z += 1;
+    }
+
+    if (Z>CHUNK_WIDTH-1)
+    {
+      Z = 0;
+      Y += 1;
+    }
+
+    glm::vec3 pos(X, Y, Z);
+    ++X;
+
+    m_chunk->setBlock(std::make_shared<Block>(EBlockType::GRASS, pos));
+  }
+
+  m_chunk->removeBlock(glm::vec3(0.0f));
 
   std::cout << "Game state initialized!\n";
 }
@@ -36,7 +62,7 @@ GameStateTest::~GameStateTest()
 void GameStateTest::render() const
 { 
   m_shader->setMat4(m_camera->getViewMatrix(), "viewMatrix");
-  m_grass->render();
+  m_chunk->render();
 }
 
 void GameStateTest::update(const double deltaTime)

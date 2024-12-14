@@ -18,7 +18,10 @@ Game::Game(GLFWwindow* windowptr): m_projectionMatrix(1.0f), m_framebufferSize(0
   //load resources for other classes to use
   m_spriteShader = ResourceManager::loadShaders("SpriteShader", "res/shaders/vSprite.vert", "res/shaders/fSprite.frag"); 
   std::vector<std::string> blockSubTextures = {"FRONT", "LEFT", "BACK", "RIGHT", "BOTTOM", "TOP"};
+
+  //load textures
   ResourceManager::loadTextureAtlas("GRASS", "res/textures/grass16x16.jpg", 16, 16, blockSubTextures);
+  ResourceManager::loadTextureAtlas("GRASS_DEBUG", "res/textures/grass16x16debug.jpg", 16, 16, blockSubTextures);
 
   m_spriteShader->use();
   m_spriteShader->setMat4(m_projectionMatrix, "projectionMatrix");
